@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MyBlackjack</string>
+    <string name="title_activity_instructions">Instructions</string>
+    <string name="title_activity_pre_game">PreGame</string>
+    <string name="title_activity_in_game">InGame</string>
+    <string name="title_activity_scores">Scores</string>
+</resources>
