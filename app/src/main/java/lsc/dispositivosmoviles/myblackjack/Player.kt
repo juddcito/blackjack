@@ -4,7 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import java.util.ArrayList
 
-class Player(var name: String?, var goal: String?, var date: String?, var hour: String?, var cards: List<String>?, var win: Boolean?) : Parcelable{
+class Player(var name: String?, var goal: String?, var date: String?, var hour: String?, var cards: MutableList<String>?, var win: Boolean?) : Parcelable{
     constructor(parcel: Parcel) : this(
         parcel.readString(),
         parcel.readString(),

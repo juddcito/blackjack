@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyBlackJackApp() {
     val options = listOf("Light Blue", "Light Red", "Light Green")
+    var theme = MySingleton.theme
     var buttonColor by remember { mutableStateOf("") }
     val context = LocalContext.current
     Box(
@@ -74,15 +75,15 @@ fun MyBlackJackApp() {
             )
             Spacer(modifier = Modifier.height(72.dp))
             Button(
-                modifier = Modifier.size(200.dp, 40.dp)
-                    .background(
-                        when (buttonColor) {
-                            "Light Blue" -> Color(0XFF6C9BCF)
-                            "Light Red" -> Color(0XFFEB455F)
-                            "Light Green" -> Color(0XFFB6EADA)
-                            else -> Color.Blue
-                        }
-                    ),
+                modifier = Modifier.size(200.dp, 40.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = when (theme) {
+                        "Light Blue" -> Color(0XFF6C9BCF)
+                        "Light Red" -> Color(0XFFC37B89)
+                        "Light Green" -> Color(0XFFBCCC9A)
+                        else -> Color(0XFFEDEDED)
+                    }
+                ),
                 onClick = {
                     val intent = Intent(context, PreGame::class.java)
                     ContextCompat.startActivity(context, intent, null)
@@ -93,6 +94,14 @@ fun MyBlackJackApp() {
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 modifier = Modifier.size(200.dp, 40.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = when (theme) {
+                        "Light Blue" -> Color(0XFF6C9BCF)
+                        "Light Red" -> Color(0XFFC37B89)
+                        "Light Green" -> Color(0XFFBCCC9A)
+                        else -> Color(0XFFEDEDED)
+                    }
+                ),
                 onClick = {
                     val intent = Intent(context, Instructions::class.java)
                     ContextCompat.startActivity(context, intent, null)
@@ -103,6 +112,14 @@ fun MyBlackJackApp() {
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 modifier = Modifier.size(200.dp, 40.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = when (theme) {
+                        "Light Blue" -> Color(0XFF6C9BCF)
+                        "Light Red" -> Color(0XFFC37B89)
+                        "Light Green" -> Color(0XFFBCCC9A)
+                        else -> Color(0XFFEDEDED)
+                    }
+                ),
                 onClick = {
                     val intent = Intent(context, Scores::class.java)
                     ContextCompat.startActivity(context, intent, null)
@@ -128,6 +145,7 @@ fun MyBlackJackApp() {
                     DropdownMenuItem(onClick = {
                         // acción al hacer clic en el primer elemento
                         buttonColor = "Light Blue"
+                        MySingleton.theme = buttonColor
                         expanded = false
                     }) {
                         Text("Light Blue")
@@ -135,6 +153,7 @@ fun MyBlackJackApp() {
                     DropdownMenuItem(onClick = {
                         // acción al hacer clic en el segundo elemento
                         buttonColor = "Light Red"
+                        MySingleton.theme = buttonColor
                         expanded = false
                     }) {
                         Text("Light Red")
@@ -142,9 +161,18 @@ fun MyBlackJackApp() {
                     DropdownMenuItem(onClick = {
                         // acción al hacer clic en el tercer elemento
                         buttonColor = "Light Green"
+                        MySingleton.theme = buttonColor
                         expanded = false
                     }) {
                         Text("Light Green")
+                    }
+                    DropdownMenuItem(onClick = {
+                        // acción al hacer clic en el tercer elemento
+                        buttonColor = "Default"
+                        MySingleton.theme = buttonColor
+                        expanded = false
+                    }) {
+                        Text("Default")
                     }
                 }
             }

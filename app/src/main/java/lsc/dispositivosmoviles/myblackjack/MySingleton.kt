@@ -2,6 +2,7 @@ package lsc.dispositivosmoviles.myblackjack
 
 object MySingleton {
     var id: Int = 0
+    var theme: String = ""
     var instance1: Player? = null
     var instance2: Player? = null
     var instance3: Player? = null

@@ -3,9 +3,8 @@ package lsc.dispositivosmoviles.myblackjack
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -70,25 +69,28 @@ fun InstructionsApp() {
         Image(
             painter = painterResource(id = R.drawable.background),
             contentDescription = "background",
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             contentScale = ContentScale.FillBounds
         )
-    }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(
-            text = "INSTRUCCIONES",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(35.dp),
-            fontSize = 32.sp,
-            color = Color.White
-        )
-        LazyColumn{
-            items(instructionList){ elemento ->
-                ElementCard(myInstruction = elemento)
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "INSTRUCCIONES",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(35.dp),
+                fontSize = 32.sp,
+                color = Color.White
+            )
+            LazyColumn(){
+                items(instructionList){ elemento ->
+                    ElementCard(myInstruction = elemento)
+                }
             }
         }
     }
@@ -101,18 +103,19 @@ fun ElementCard(myInstruction: Instruction) {
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(32.dp)
-            .border(width = 1.dp, color = Color.Gray)
-            .padding(12.dp)
+            .border(width = 1.dp, color = Color(0XFFFDF7C3))
+            .padding(16.dp)
     )
     {
         myInstruction.number?.let {
             Text(text = "Regla #$it",
                 fontSize = 28.sp,
+                color = Color(0XFFF7C04A),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
               )
         }
-        myInstruction.instruction?.let { Text(text = it, fontSize = 20.sp) }
+        myInstruction.instruction?.let { Text(text = it, fontSize = 20.sp, color = Color.White) }
     }
 }
 

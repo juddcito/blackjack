@@ -1,6 +1,7 @@
 package lsc.dispositivosmoviles.myblackjack
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -27,6 +28,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import lsc.dispositivosmoviles.myblackjack.ui.theme.MyBlackjackTheme
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 
 class Scores : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,22 +85,22 @@ fun ScoresApp(instanceList: List<Player>) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds
         )
-    }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(
-            text = "SCORES",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(35.dp),
-            fontSize = 32.sp,
-            color = Color.White
-        )
-        LazyColumn{
-            items(instanceList){ elemento ->
-               PlayerCard(elemento)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "SCORES",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(35.dp),
+                fontSize = 32.sp,
+                color = Color.White
+            )
+            LazyColumn {
+                items(instanceList) { elemento ->
+                    PlayerCard(elemento)
+                }
             }
         }
     }
@@ -104,36 +108,66 @@ fun ScoresApp(instanceList: List<Player>) {
 
 @Composable
 fun PlayerCard(myPlayer: Player) {
-    val listaGeneric: List<Any> = myPlayer.cards.orEmpty().map { it as Int }
+    var playerCards = remember { mutableStateListOf<Int>() }
+    myPlayer.cards?.let { it -> playerCards.addAll(it.map { it.toInt() }) }
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(32.dp)
-            .border(width = 1.dp, color = Color.Gray)
+            .border(width = 1.dp, color = Color(0XFFFDF7C3))
             .padding(12.dp)
     )
     {
-        myPlayer.name?.let {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            myPlayer.name?.let {
+                Text(
+                    text = it.uppercase(),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = when (myPlayer.win){
+                        true -> Color(0xFF829460)
+                        else -> Color(0XFFE26868)
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.width(32.dp))
             Text(
-                text = it,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                text = "VS",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
             )
+            Spacer(modifier = Modifier.width(32.dp))
+            Text(
+                text = "CRUPIER",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = when (myPlayer.win){
+                    false -> Color(0xFFFF829460)
+                    else -> Color(0XFFE26868)
+                })
         }
-        Text(
-            text = "VS",
-            fontSize = 28.sp,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-        Text(
-            text = "CRUPIER",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally))
-        myPlayer.date?.let { Text(text = it, fontSize = 20.sp) }
-        myPlayer.hour?.let { Text(text = it, fontSize = 20.sp) }
+        myPlayer.date?.let { Text(text = it, fontSize = 20.sp, color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+        myPlayer.hour?.let { Text(text = it, fontSize = 20.sp, color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+
+        LazyRow {
+            items(playerCards) { image ->
+                var cardStringTemporal = "carta_$image"
+                val drawableId = getDrawableIdByName(cardStringTemporal, context)
+                Image(
+                    painter = painterResource(id = drawableId),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(110.dp)
+                )
+            }
+        }
     }
 }
 

@@ -58,7 +58,7 @@ class InGame : ComponentActivity() {
                         goal = goal,
                         date = completeDate,
                         hour = completeHour,
-                        cards = cardsArray,
+                        cards = cardsArray.toMutableList(),
                         win = false
                     )
                     startPlayerHand()
@@ -109,7 +109,7 @@ fun startPlayerHand() {
 
 @Composable
 fun InGameApp(player: Player) {
-    var id = MySingleton.id
+    var theme = MySingleton.theme
     val context = LocalContext.current
     var crupierScore: Int by remember { mutableStateOf(0) }
     var playerScore: Int by remember { mutableStateOf(0) }
@@ -117,32 +117,15 @@ fun InGameApp(player: Player) {
     var startStatus by remember { mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
     var winner by remember { mutableStateOf("empate") }
-
-    // Repartir las cartas del Player
-    startPlayerHand()
-
-    var usedCardsPlayer = arrayOf(firstCard, secondCard)
-    var usedCardsCrupier = arrayOf<Int>()
+    var usedCards = arrayOf<Int>()
     var playerCards = remember { mutableStateListOf<Int>() }
     var crupierCards = remember { mutableStateListOf<Int>() }
-
-    var cardString1 = "carta_$firstCard"
-    var cardString2 = "carta_$secondCard"
-    var id1 = LocalContext.current.resources.getIdentifier(
-        cardString1,
-        "drawable",
-        LocalContext.current.packageName
-    )
-    var id2 = LocalContext.current.resources.getIdentifier(
-        cardString2,
-        "drawable",
-        LocalContext.current.packageName
-    )
-
-    // Guardar las cartas en cardsArray, que son las cartas de su jugada
-    player.cards?.plus(id1.toString())
-    player.cards?.plus(id2.toString())
-    Log.d("Mensajito", player.cards.toString())
+    var arrayPlayerCards = remember { mutableStateListOf<Int>() }
+    var arrayCrupierCards = remember { mutableStateListOf<Int>() }
+    var id = MySingleton.id
+    var surpriseCrupierCard = 0
+    var drawableSurpriseId = 0
+    var surpriseCrupierCardString = ""
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -229,8 +212,12 @@ fun InGameApp(player: Player) {
             ) {
                 Button(
                     onClick = {
+                        id += 1
+                        MySingleton.id = id
+                        arrayPlayerCards.clear()
+                        arrayCrupierCards.clear()
                         statusBoton = false
-                        startStatus = true
+                        startStatus = false
                         playerScore = 0
                         crupierScore = 0
                         playerCards.apply {
@@ -240,98 +227,185 @@ fun InGameApp(player: Player) {
                             clear()
                         }
                         statusBoton = true
+                        Log.d("Mensajito", id.toString())
+                        // Repartir carta a crupier
                         var temporalCard = (1..52).random()
-                        val arrayTemp = usedCardsPlayer.plus(temporalCard)
-                        val arrayTemp2 = usedCardsCrupier.plus(temporalCard)
-                        usedCardsPlayer = arrayTemp
-                        usedCardsCrupier = arrayTemp2
-                        playerScore += checkCardValue(temporalCard)
-                        crupierScore += checkCardValue(temporalCard)
+
+                        // Verificar valores de As
+                        if (temporalCard == 1 || temporalCard == 2 || temporalCard == 3 || temporalCard == 4){
+                            if ((crupierScore + 11) > 21) {
+                                crupierScore += 1
+                            } else {
+                                crupierScore += 11
+                            }
+                        } else {
+                            crupierScore += checkCardValue(temporalCard)
+                        }
+
+                        usedCards.plus(temporalCard)
                         var cardStringTemporal = "carta_$temporalCard"
                         val drawableId = getDrawableIdByName(cardStringTemporal, context)
-                        playerCards.add(drawableId)
-                        playerCards.add(drawableId)
                         crupierCards.add(drawableId)
+                        crupierCards.add(R.drawable.surprise)
+                        arrayCrupierCards.add(temporalCard)
+
+                        // Repartir cartas a player
+                        for (i in 1..2){
+                            temporalCard = (1..52).random()
+                            while (usedCards.contains(temporalCard)) {
+                                temporalCard = (1..52).random()
+                            }
+                            //Verificar Ases
+                            if (temporalCard == 1 || temporalCard == 2 || temporalCard == 3 || temporalCard == 4){
+                                if ((playerScore + 11) > 21) {
+                                    playerScore += 1
+                                } else {
+                                    playerScore += 11
+                                }
+                            } else {
+                                playerScore += checkCardValue(temporalCard)
+                            }
+                            usedCards.plus(temporalCard)
+                            arrayPlayerCards.add(temporalCard)
+                            var cardStringTemporal = "carta_$temporalCard"
+                            val drawableId = getDrawableIdByName(cardStringTemporal, context)
+                            playerCards.add(drawableId)
+                        }
                     }, enabled = startStatus,
-                    modifier = Modifier.width(200.dp)
+                    modifier = Modifier.width(200.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = when (theme) {
+                            "Light Blue" -> Color(0XFF6C9BCF)
+                            "Light Red" -> Color(0XFFC37B89)
+                            "Light Green" -> Color(0XFFBCCC9A)
+                            else -> Color(0XFFEDEDED)
+                        }
+                    )
                 ) {
                     Text(text = "EMPEZAR!")
                 }
                 Button(
                     onClick = {
+                        val myNewPlayer = Player(player.name, player.goal, player.date, player.hour, player.cards, player.win)
                         var temporalCard = (1..52).random()
-                        while (usedCardsPlayer.contains(temporalCard)) {
+                        while (usedCards.contains(temporalCard)) {
                             temporalCard = (1..52).random()
                         }
-                        val arrayTemp = usedCardsPlayer.plus(temporalCard)
-                        usedCardsPlayer = arrayTemp
-                        playerScore += checkCardValue(temporalCard)
+                        //Verificar Ases
+                        if (temporalCard == 1 || temporalCard == 2 || temporalCard == 3 || temporalCard == 4){
+                            if ((playerScore + 11) > 21) {
+                                playerScore += 1
+                            } else {
+                                playerScore += 11
+                            }
+                        } else {
+                            playerScore += checkCardValue(temporalCard)
+                        }
+                        usedCards.plus(temporalCard)
+                        arrayPlayerCards.add(temporalCard)
                         var cardStringTemporal = "carta_$temporalCard"
                         val drawableId = getDrawableIdByName(cardStringTemporal, context)
                         playerCards.add(drawableId)
+                        for (value in arrayCrupierCards) {
+                            Log.d("Mensajito", "Value arrayCrupier: $value")
+                        }
+                        for (value in arrayPlayerCards) {
+                            Log.d("Mensajito", "Value arrayPlayer: $value")
+                        }
                         if (playerScore > player.goal?.toInt() ?: 21){
                             winner = "crupier"
-                            player.win = false
-                            val listaCartas = usedCardsCrupier.map { it.toString() }
-                            player.cards = listaCartas
+                            myNewPlayer.win = false
+                            val listaCartas = arrayCrupierCards.map { it.toString() }
+                            myNewPlayer.cards = listaCartas.toMutableList()
                             showDialog = true
-                            id += 1
-                            MySingleton.id = id
                             val attributeName = "instance$id"
                             val field = MySingleton::class.java.getDeclaredField(attributeName)
                             field.isAccessible = true
-                            field.set(MySingleton, player)
+                            field.set(MySingleton, myNewPlayer)
+                            player.cards?.clear()
+                            startStatus = true
+                            statusBoton = false
                         }
                     }, enabled = statusBoton,
-                    modifier = Modifier.width(200.dp)
+                    modifier = Modifier.width(200.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = when (theme) {
+                            "Light Blue" -> Color(0XFF6C9BCF)
+                            "Light Red" -> Color(0XFFC37B89)
+                            "Light Green" -> Color(0XFFBCCC9A)
+                            else -> Color(0XFFEDEDED)
+                        }
+                    )
                 ) {
                     Text(text = "PEDIR")
                 }
                 Button(
                     onClick = {
+                        val myNewPlayer = Player(player.name, player.goal, player.date, player.hour, player.cards, player.win)
                         var temporalCard = 0
+                        crupierCards.removeAt(1)
                         while (crupierScore <= player.goal?.toInt() ?: 21) {
                             if (crupierScore < 17){
                                 temporalCard = (1..52).random()
-                                val arrayTemp = usedCardsCrupier.plus(temporalCard)
-                                usedCardsCrupier = arrayTemp
-                                crupierScore += checkCardValue(temporalCard)
+                                //Verificar Ases
+                                if (temporalCard == 1 || temporalCard == 2 || temporalCard == 3 || temporalCard == 4){
+                                    if ((crupierScore + 11) > 21) {
+                                        crupierScore += 1
+                                    } else {
+                                        crupierScore += 11
+                                    }
+                                } else {
+                                    crupierScore += checkCardValue(temporalCard)
+                                }
+                                arrayCrupierCards.add(temporalCard)
                                 var cardStringTemporal = "carta_$temporalCard"
                                 val drawableId = getDrawableIdByName(cardStringTemporal, context)
+
                                 crupierCards.add(drawableId)
                             } else {
                                 break
                             }
                         }
+
                         if (crupierScore > player.goal?.toInt() ?: 21){
                             winner = "player"
-                            player.win = true
-                            val listaCartas = usedCardsPlayer.map { it.toString() }
-                            player.cards = listaCartas
+                            myNewPlayer.win = true
+                            val listaCartas = arrayPlayerCards.map { it.toString() }
+                            myNewPlayer.cards = listaCartas.toMutableList()
                         } else if (playerScore == crupierScore){
                             winner = "empate"
-                            player.win = false
+                            myNewPlayer.win = false
                         } else if (playerScore > crupierScore){
                             winner = "player"
-                            player.win = true
-                            val listaCartas = usedCardsPlayer.map { it.toString() }
-                            player.cards = listaCartas
+                            myNewPlayer.win = true
+                            val listaCartas = arrayPlayerCards.map { it.toString() }
+                            myNewPlayer.cards = listaCartas.toMutableList()
                         } else if (crupierScore > playerScore){
                             winner = "crupier"
-                            player.win = false
-                            val listaCartas = usedCardsCrupier.map { it.toString() }
-                            player.cards = listaCartas
+                            myNewPlayer.win = false
+                            val listaCartas = arrayCrupierCards.map { it.toString() }
+                            myNewPlayer.cards = listaCartas.toMutableList()
                         }
                         showDialog = true
-                        id += 1
-                        MySingleton.id = id
                         val attributeName = "instance$id"
                         val field = MySingleton::class.java.getDeclaredField(attributeName)
                         field.isAccessible = true
-                        field.set(MySingleton, player)
+                        field.set(MySingleton, myNewPlayer)
+                        startStatus = true
+                        statusBoton = false
+                        arrayPlayerCards.clear()
+                        arrayCrupierCards.clear()
                     },
                     enabled = statusBoton,
-                    modifier = Modifier.width(200.dp)
+                    modifier = Modifier.width(200.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = when (theme) {
+                            "Light Blue" -> Color(0XFF6C9BCF)
+                            "Light Red" -> Color(0XFFC37B89)
+                            "Light Green" -> Color(0XFFBCCC9A)
+                            else -> Color(0XFFEDEDED)
+                        }
+                    )
                 ) {
                     Text(text = "PLANTAR")
                 }
@@ -354,7 +428,15 @@ fun InGameApp(player: Player) {
                         val intent = Intent(context, MainActivity::class.java)
                         ContextCompat.startActivity(context, intent, null)
                     },
-                    modifier = Modifier.width(200.dp)
+                    modifier = Modifier.width(200.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = when (theme) {
+                            "Light Blue" -> Color(0XFF6C9BCF)
+                            "Light Red" -> Color(0XFFC37B89)
+                            "Light Green" -> Color(0XFFBCCC9A)
+                            else -> Color(0XFFEDEDED)
+                        }
+                    )
                 ) {
                     Text(text = "MENÚ PRINCIPAL")
                 }
@@ -383,7 +465,7 @@ fun getContent(variable: String): String {
 @Composable
 fun DefaultPreview4() {
     MyBlackjackTheme {
-        var player = Player("Juan", "21", "12/04/2023", "15:08", listOf("", "", ""), false)
+        var player = Player("Juan", "21", "12/04/2023", "15:08", listOf("", "", "").toMutableList(), false)
         InGameApp(player)
     }
 }
